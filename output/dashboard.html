@@ -1050,7 +1050,7 @@ function openGammaModal(storyIdx, mode, clientId) {
 
   const gamma_url = 'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt);
 
-  window.open(gamma_url, '_blank');
+  location.href = gamma_url;
   toast('Opening Gamma - presentation generating...');
 }
 
