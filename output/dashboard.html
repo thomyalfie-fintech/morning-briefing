@@ -1043,47 +1043,15 @@ function buildGammaPrompt(story, mode, client) {
   return lines.join('\n');
 }
 
-async function openGammaModal(storyIdx, mode, clientId) {
+function openGammaModal(storyIdx, mode, clientId) {
   const story  = BRIEFING.stories[storyIdx];
   const client = clientId ? clients.find(c => c.id === clientId) : null;
   _currentPrompt = buildGammaPrompt(story, mode, client);
 
-  const type = mode === 'general'   ? 'General'
-             : mode === 'internal'  ? 'Internal'
-             : 'Personalized';
-
   const gamma_url = 'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt);
 
-  toast('Generating presentation...');
-
-  try {
-    await fetch('https://unsplenetic-ornithoid-fernanda.ngrok-free.app/generate', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-      body: JSON.stringify({
-        headline:  story.headline,
-        summary:   story.summary,
-        asset:     story.asset,
-        direction: story.direction,
-        type,
-        gamma_url
-      })
-    });
-
-    // Log to history
-    history.unshift({
-      date:      new Date().toISOString(),
-      story:     story.headline,
-      client:    client ? client.name : '—',
-      type,
-      promptUrl: gamma_url
-    });
-    LS.set('history', history);
-
-    toast('Presentation sent to your email!');
-  } catch (err) {
-    toast('Error: ' + err.message);
-  }
+  window.open(gamma_url, '_blank');
+  toast('Opening Gamma - presentation generating...');
 }
 
 function copyGammaPrompt() {
