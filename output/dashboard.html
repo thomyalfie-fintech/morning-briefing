@@ -1048,51 +1048,15 @@ async function openGammaModal(storyIdx, mode, clientId) {
   const client = clientId ? clients.find(c => c.id === clientId) : null;
   _currentPrompt = buildGammaPrompt(story, mode, client);
 
-  const apiKey = localStorage.getItem('anthropic_key');
-  if (!apiKey) {
-    toast('Add your API key in Settings');
-    return;
-  }
-
   const type = mode === 'general'   ? 'General'
              : mode === 'internal'  ? 'Internal'
              : 'Personalized';
 
+  const gamma_url = 'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt);
+
   toast('Generating presentation...');
 
   try {
-    const claudePrompt = `Build a gamma_url by combining the base URL and the encoded prompt.
-Return ONLY a JSON object with a single key "gamma_url" whose value is:
-"https://gamma.app/create?prompt=" + encodeURIComponent(the following prompt)
-
-Prompt to encode:
-${_currentPrompt}`;
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 512,
-        messages: [{ role: 'user', content: claudePrompt }]
-      })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-
-    let gamma_url;
-    try {
-      const parsed = JSON.parse(data.content[0].text.trim());
-      gamma_url = parsed.gamma_url;
-    } catch {
-      gamma_url = 'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt);
-    }
-
     await fetch('https://hook.eu2.make.com/ftqvuynbyasi5qyqpnbk6iomdbliyhhr', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
