@@ -965,9 +965,9 @@ function renderStories() {
         <a class="card-source-link" href="${googleNewsUrl}" target="_blank" rel="noopener">View source →</a>
       </div>
       <div class="card-buttons">
-        <button class="btn btn-coral"  onclick="openGammaModal(${idx},'general')">General</button>
+        <a class="btn btn-coral"  href="${getGammaUrl(${idx},'general')}"  target="_blank" rel="noopener">General</a>
         <button class="btn btn-purple" onclick="openClientPicker(${idx})">Personalized</button>
-        <button class="btn btn-dark"   onclick="openGammaModal(${idx},'internal')">Internal</button>
+        <a class="btn btn-dark"   href="${getGammaUrl(${idx},'internal')}" target="_blank" rel="noopener">Internal</a>
       </div>`;
     wrap.appendChild(card);
   });
@@ -1041,6 +1041,12 @@ function buildGammaPrompt(story, mode, client) {
   }
   lines.push('', `Generate a ${slides}-slide presentation now.`);
   return lines.join('\n');
+}
+
+function getGammaUrl(idx, mode) {
+  const story = BRIEFING.stories[idx];
+  const prompt = buildGammaPrompt(story, mode, null);
+  return 'https://gamma.app/create?prompt=' + encodeURIComponent(prompt);
 }
 
 function openGammaModal(storyIdx, mode, clientId) {
