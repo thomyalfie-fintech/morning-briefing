@@ -1043,31 +1043,83 @@ function buildGammaPrompt(story, mode, client) {
   return lines.join('\n');
 }
 
-function openGammaModal(storyIdx, mode, clientId) {
+async function openGammaModal(storyIdx, mode, clientId) {
   const story  = BRIEFING.stories[storyIdx];
   const client = clientId ? clients.find(c => c.id === clientId) : null;
   _currentPrompt = buildGammaPrompt(story, mode, client);
 
-  const label = mode === 'general'      ? 'General Presentation'
-              : mode === 'internal'     ? 'Internal Presentation'
-              : 'Personalized for ' + (client ? client.name : '');
+  const apiKey = localStorage.getItem('anthropic_key');
+  if (!apiKey) {
+    toast('Add your API key in Settings');
+    return;
+  }
 
-  document.getElementById('gamma-title').textContent = label + ' — Gamma Prompt';
-  document.getElementById('gamma-prompt').textContent = _currentPrompt;
-  document.getElementById('gamma-open-link').href =
-    'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt);
+  const type = mode === 'general'   ? 'General'
+             : mode === 'internal'  ? 'Internal'
+             : 'Personalized';
 
-  // Log to history
-  history.unshift({
-    date:    new Date().toISOString(),
-    story:   story.headline,
-    client:  client ? client.name : '—',
-    type:    mode.charAt(0).toUpperCase() + mode.slice(1),
-    promptUrl: 'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt)
-  });
-  LS.set('history', history);
+  toast('Generating presentation...');
 
-  openModal('gamma-modal');
+  try {
+    const claudePrompt = `Build a gamma_url by combining the base URL and the encoded prompt.
+Return ONLY a JSON object with a single key "gamma_url" whose value is:
+"https://gamma.app/create?prompt=" + encodeURIComponent(the following prompt)
+
+Prompt to encode:
+${_currentPrompt}`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: claudePrompt }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    let gamma_url;
+    try {
+      const parsed = JSON.parse(data.content[0].text.trim());
+      gamma_url = parsed.gamma_url;
+    } catch {
+      gamma_url = 'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt);
+    }
+
+    await fetch('https://hook.eu2.make.com/ftqvuynbyasi5qyqpnbk6iomdbliyhhr', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        headline:  story.headline,
+        summary:   story.summary,
+        asset:     story.asset,
+        direction: story.direction,
+        type,
+        gamma_url
+      })
+    });
+
+    // Log to history
+    history.unshift({
+      date:      new Date().toISOString(),
+      story:     story.headline,
+      client:    client ? client.name : '—',
+      type,
+      promptUrl: gamma_url
+    });
+    LS.set('history', history);
+
+    toast('Presentation sent to your email!');
+  } catch (err) {
+    toast('Error: ' + err.message);
+  }
 }
 
 function copyGammaPrompt() {
