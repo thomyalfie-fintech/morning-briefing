@@ -1059,7 +1059,7 @@ async function openGammaModal(storyIdx, mode, clientId) {
   try {
     await fetch('https://unsplenetic-ornithoid-fernanda.ngrok-free.app/generate', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
       body: JSON.stringify({
         headline:  story.headline,
         summary:   story.summary,
