@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Briefing — Trading Dashboard</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --text: #222222;
+  --text-muted: #717171;
+  --text-light: #b0b0b0;
+  --border: #ebebeb;
+  --border-strong: #dddddd;
+  --coral: #ff385c;
+  --coral-dark: #e0314e;
+  --purple: #7c3aed;
+  --purple-dark: #6d28d9;
+  --dark: #222222;
+  --green: #00a86b;
+  --green-bg: #e8f7f0;
+  --red: #e53935;
+  --red-bg: #fdecea;
+  --amber: #f59e0b;
+  --amber-bg: #fef3c7;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 2px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 28px rgba(0,0,0,0.18);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+[data-theme="dark"] {
+  --bg: #0f1014;
+  --surface: #1a1c22;
+  --text: #f5f5f5;
+  --text-muted: #9ca3af;
+  --text-light: #6b7280;
+  --border: #2a2d36;
+  --border-strong: #3a3d46;
+  --shadow: 0 2px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 28px rgba(0,0,0,0.6);
+  --green-bg: rgba(0,168,107,0.15);
+  --red-bg: rgba(229,57,53,0.15);
+  --amber-bg: rgba(245,158,11,0.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+/* ── Top nav ─────────────────────────────────────────────── */
+.topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-logo {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--coral), #ff7a8a);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 18px;
+}
+.brand-text h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+.brand-text p  { font-size: 12px; color: var(--text-muted); }
+
+.nav-links { display: flex; gap: 6px; }
+.nav-link {
+  padding: 9px 18px;
+  border-radius: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all 0.15s;
+}
+.nav-link:hover { background: var(--border); color: var(--text); }
+.nav-link.active { background: var(--dark); color: #fff; }
+[data-theme="dark"] .nav-link.active { background: #fff; color: var(--dark); }
+
+.nav-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: all 0.15s;
+}
+.icon-btn:hover { background: var(--border); }
+
+/* ── Ticker tape ─────────────────────────────────────────── */
+.ticker-wrap {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* ── Page sections ───────────────────────────────────────── */
+.page { display: none; padding: 40px 48px 80px; max-width: 1400px; margin: 0 auto; }
+.page.active { display: block; }
+.section-head {
+  display: flex; align-items: end; justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap; gap: 16px;
+}
+.section-head h2 {
+  font-size: 28px; font-weight: 800; letter-spacing: -0.6px;
+}
+.section-head .sub {
+  font-size: 14px; color: var(--text-muted); margin-top: 4px;
+}
+.section-actions { display: flex; gap: 10px; align-items: center; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-coral   { background: var(--coral); color: #fff; }
+.btn-coral:hover { background: var(--coral-dark); }
+.btn-purple  { background: var(--purple); color: #fff; }
+.btn-purple:hover { background: var(--purple-dark); }
+.btn-dark    { background: var(--dark); color: #fff; }
+.btn-dark:hover { background: #000; }
+.btn-light   {
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+.btn-light:hover { background: var(--border); }
+.btn-sm { padding: 7px 13px; font-size: 12px; }
+.btn-block { width: 100%; justify-content: center; }
+
+/* ── Story cards ─────────────────────────────────────────── */
+.stories-scroll {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 6px 6px 24px;
+  scroll-snap-type: x mandatory;
+  margin: 0 -6px;
+}
+.stories-scroll::-webkit-scrollbar { height: 8px; }
+.stories-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+.story-card {
+  flex: 0 0 340px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  scroll-snap-align: start;
+  display: flex; flex-direction: column; gap: 14px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.story-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.14);
+}
+
+.card-top { display: flex; justify-content: space-between; align-items: start; }
+
+.asset-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.asset-badge.up   { background: var(--green-bg); color: var(--green); }
+.asset-badge.down { background: var(--red-bg);   color: var(--red); }
+
+.bookmark-btn {
+  background: none; border: none;
+  font-size: 22px; cursor: pointer;
+  color: var(--text-light);
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s, transform 0.15s;
+}
+.bookmark-btn:hover { transform: scale(1.15); }
+.bookmark-btn.active { color: var(--coral); }
+
+.card-headline {
+  font-size: 17px; font-weight: 700; line-height: 1.35;
+  color: var(--text);
+}
+.card-summary {
+  font-size: 13px; color: var(--text-muted); line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-summary.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+.read-more-btn {
+  background: none; border: none; padding: 0;
+  font-size: 12px; font-weight: 600; color: var(--coral);
+  cursor: pointer; font-family: inherit;
+  margin-top: 2px;
+}
+.read-more-btn:hover { text-decoration: underline; }
+.card-source-link {
+  font-size: 12px; color: var(--text-muted);
+  text-decoration: none;
+}
+.card-source-link:hover { color: var(--coral); }
+
+.mini-chart {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.mini-chart iframe { display: block; }
+
+.card-meta-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; color: var(--text-muted);
+}
+.price-info { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.price-info .arrow { font-size: 14px; }
+.price-info.up   { color: var(--green); }
+.price-info.down { color: var(--red); }
+
+.card-buttons { display: flex; gap: 6px; margin-top: auto; }
+.card-buttons .btn { flex: 1; padding: 9px 8px; font-size: 12px; justify-content: center; }
+
+/* ── Client cards (CRM) ──────────────────────────────────── */
+.client-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+.client-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+.client-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.14);
+}
+.client-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--coral), var(--purple));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 18px;
+  flex-shrink: 0;
+}
+.client-name { font-size: 16px; font-weight: 700; }
+.client-id { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.pill-green { background: var(--green-bg); color: var(--green); }
+.pill-amber { background: var(--amber-bg); color: var(--amber); }
+.pill-red   { background: var(--red-bg);   color: var(--red); }
+.pill-coral { background: rgba(255,56,92,0.1); color: var(--coral); }
+
+.client-info {
+  display: flex; flex-direction: column; gap: 8px;
+  font-size: 13px; color: var(--text-muted);
+  margin: 14px 0 18px;
+  padding: 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.client-info .row { display: flex; justify-content: space-between; align-items: center; }
+.client-info .row strong { color: var(--text); font-weight: 600; }
+.overdue { color: var(--red) !important; font-weight: 700; }
+
+.client-buttons { display: flex; gap: 6px; }
+.client-buttons .btn { flex: 1; font-size: 11px; padding: 8px 6px; justify-content: center; }
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+.empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; font-weight: 700; }
+.empty-state p { font-size: 14px; }
+
+/* ── Search bar ──────────────────────────────────────────── */
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 30px;
+  padding: 10px 18px;
+  width: 320px;
+  transition: box-shadow 0.15s;
+}
+.search-bar:focus-within { box-shadow: 0 0 0 3px rgba(255,56,92,0.15); border-color: var(--coral); }
+.search-bar input {
+  border: none; outline: none; background: transparent;
+  flex: 1; font-size: 14px; color: var(--text);
+  font-family: inherit;
+}
+.kbd {
+  background: var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+/* ── Tables ──────────────────────────────────────────────── */
+.history-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.history-table table { width: 100%; border-collapse: collapse; }
+.history-table th, .history-table td {
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.history-table th {
+  background: var(--bg);
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.history-table tr:last-child td { border-bottom: none; }
+.history-table tr:hover td { background: var(--bg); }
+
+/* ── Digest card ─────────────────────────────────────────── */
+.digest-card {
+  background: linear-gradient(135deg, #fff5f7, #fff);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px;
+  box-shadow: var(--shadow);
+}
+[data-theme="dark"] .digest-card {
+  background: linear-gradient(135deg, rgba(255,56,92,0.08), var(--surface));
+}
+.digest-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.digest-card p  { color: var(--text-muted); margin-bottom: 20px; font-size: 14px; }
+#digest-result {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  display: none;
+}
+
+/* ── Modals ──────────────────────────────────────────────── */
+.modal-backdrop {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+.modal-backdrop.open { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--surface);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-lg { max-width: 720px; }
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-head h3 { font-size: 18px; font-weight: 800; }
+.modal-close {
+  background: none; border: none;
+  font-size: 24px; color: var(--text-muted);
+  cursor: pointer; line-height: 1;
+  padding: 4px 10px; border-radius: 6px;
+}
+.modal-close:hover { background: var(--border); color: var(--text); }
+.modal-body { padding: 24px 28px; overflow-y: auto; flex: 1; }
+.modal-foot {
+  display: flex; gap: 10px; padding: 18px 28px;
+  border-top: 1px solid var(--border);
+}
+
+.prompt-box {
+  font-family: 'Courier New', monospace;
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  margin: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+/* ── Forms ───────────────────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px rgba(255,56,92,0.12);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.checkbox-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; }
+.checkbox-row label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; text-transform: none; letter-spacing: 0;
+  font-weight: 500; color: var(--text); margin: 0;
+  cursor: pointer;
+}
+
+/* ── Misc ────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: var(--dark); color: #fff;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.ai-result {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .topnav { padding: 14px 20px; flex-wrap: wrap; gap: 12px; }
+  .nav-links { order: 3; width: 100%; overflow-x: auto; }
+  .page { padding: 28px 20px 60px; }
+  .section-head h2 { font-size: 22px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAV ──────────────────────────────────────────── -->
+<nav class="topnav">
+  <div class="brand">
+    <div class="brand-logo">M</div>
+    <div class="brand-text">
+      <h1>Morning Briefing</h1>
+      <p id="today-date"></p>
+    </div>
+  </div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="showPage('briefing', this)">Briefing</button>
+    <button class="nav-link" onclick="showPage('clients', this)">Clients</button>
+    <button class="nav-link" onclick="showPage('history', this)">History</button>
+    <button class="nav-link" onclick="showPage('digest', this)">Digest</button>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
+  </div>
+</nav>
+
+<!-- ── TICKER TAPE ──────────────────────────────────────── -->
+<div class="ticker-wrap">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName": "FX:EURUSD"},
+        {"proName": "FX:GBPUSD"},
+        {"proName": "FX:USDJPY"},
+        {"proName": "FOREXCOM:SPXUSD"},
+        {"proName": "FOREXCOM:UKXGBP"},
+        {"proName": "FOREXCOM:GRXEUR"},
+        {"proName": "COMEX:GC1!"},
+        {"proName": "NYMEX:BB1!"},
+        {"proName": "BITSTAMP:BTCUSD"},
+        {"proName": "BITSTAMP:ETHUSD"}
+      ],
+      "showSymbolLogo": true,
+      "colorTheme": "light",
+      "isTransparent": true,
+      "displayMode": "adaptive",
+      "locale": "en"
+    }
+    </script>
+  </div>
+</div>
+
+<!-- ── PAGE: BRIEFING ───────────────────────────────────── -->
+<section id="page-briefing" class="page active">
+  <div class="section-head">
+    <div>
+      <h2>Today's Market Stories</h2>
+      <p class="sub" id="briefing-sub"></p>
+    </div>
+  </div>
+  <div class="stories-scroll" id="stories-scroll"></div>
+</section>
+
+<!-- ── PAGE: CLIENTS ────────────────────────────────────── -->
+<section id="page-clients" class="page">
+  <div class="section-head">
+    <div>
+      <h2>My Clients</h2>
+      <p class="sub" id="clients-sub">Manage your client relationships</p>
+    </div>
+    <div class="section-actions">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input id="client-search" type="text" placeholder="Search clients..." oninput="renderClients()">
+        <span class="kbd">/</span>
+      </div>
+      <button class="btn btn-coral" onclick="openClientForm()">+ Add Client</button>
+    </div>
+  </div>
+  <div class="client-grid" id="client-grid"></div>
+</section>
+
+<!-- ── PAGE: HISTORY ────────────────────────────────────── -->
+<section id="page-history" class="page">
+  <div class="section-head">
+    <div>
+      <h2>Presentation History</h2>
+      <p class="sub" id="history-sub">All Gamma presentations you've generated</p>
+    </div>
+    <button class="btn btn-light" onclick="clearHistory()">Clear all</button>
+  </div>
+  <div class="history-table" id="history-table"></div>
+</section>
+
+<!-- ── PAGE: DIGEST ─────────────────────────────────────── -->
+<section id="page-digest" class="page">
+  <div class="section-head">
+    <div>
+      <h2>Weekly AI Digest</h2>
+      <p class="sub">Aggregate insights from your past 7 days of client calls</p>
+    </div>
+  </div>
+  <div class="digest-card">
+    <h3>Generate this week's intelligence brief</h3>
+    <p>AI will review all call logs from the past 7 days and surface top opportunities, sentiment trends, and recommended follow-ups.</p>
+    <button class="btn btn-coral" id="digest-btn" onclick="generateDigest()">✨ Generate Weekly Digest</button>
+    <div id="digest-result"></div>
+  </div>
+</section>
+
+<!-- ── MODALS ───────────────────────────────────────────── -->
+
+<!-- Gamma prompt modal -->
+<div class="modal-backdrop" id="gamma-modal" onclick="if(event.target===this)closeModal('gamma-modal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="gamma-title">Gamma Prompt</h3>
+      <button class="modal-close" onclick="closeModal('gamma-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <pre id="gamma-prompt" class="prompt-box"></pre>
+    </div>
+    <div class="modal-foot">
+      <a id="gamma-open-link" class="btn btn-coral" href="#" target="_blank" rel="noopener">Open in Gamma</a>
+      <button class="btn btn-light" onclick="copyGammaPrompt()" id="gamma-copy-btn">Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Client picker modal (for personalized presentations) -->
+<div class="modal-backdrop" id="picker-modal" onclick="if(event.target===this)closeModal('picker-modal')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Pick a client</h3>
+      <button class="modal-close" onclick="closeModal('picker-modal')">&times;</button>
+    </div>
+    <div class="modal-body" id="picker-list"></div>
+  </div>
+</div>
+
+<!-- Add/edit client form modal -->
+<div class="modal-backdrop" id="client-form-modal" onclick="if(event.target===this)closeModal('client-form-modal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="client-form-title">Add Client</h3>
+      <button class="modal-close" onclick="closeModal('client-form-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Name</label><input id="cf-name" type="text"></div>
+        <div class="form-group"><label>Platform ID</label><input id="cf-pid" type="text"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Risk Profile</label>
+          <select id="cf-risk">
+            <option value="Conservative">Conservative</option>
+            <option value="Moderate">Moderate</option>
+            <option value="Aggressive">Aggressive</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Portfolio Size</label><input id="cf-portfolio" type="text" placeholder="$100,000"></div>
+      </div>
+      <div class="form-group">
+        <label>Preferred Assets</label>
+        <div class="checkbox-row">
+          <label><input type="checkbox" class="cf-asset" value="Forex"> Forex</label>
+          <label><input type="checkbox" class="cf-asset" value="Indices"> Indices</label>
+          <label><input type="checkbox" class="cf-asset" value="Commodities"> Commodities</label>
+          <label><input type="checkbox" class="cf-asset" value="Crypto"> Crypto</label>
+          <label><input type="checkbox" class="cf-asset" value="Stocks"> Stocks</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Nationality</label><input id="cf-nationality" type="text"></div>
+        <div class="form-group">
+          <label>Experience Level</label>
+          <select id="cf-experience">
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Expert</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Investment Goals</label><textarea id="cf-goals" rows="2"></textarea></div>
+      <div class="form-group"><label>Custom Notes</label><textarea id="cf-notes" rows="2"></textarea></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Sentiment</label>
+          <select id="cf-sentiment">
+            <option value="hot">🔥 Hot</option>
+            <option value="warm" selected>☀️ Warm</option>
+            <option value="cold">❄️ Cold</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Follow-up Date</label><input id="cf-followup" type="date"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-coral" onclick="saveClient()">Save Client</button>
+      <button class="btn btn-light" onclick="closeModal('client-form-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log call modal -->
+<div class="modal-backdrop" id="logcall-modal" onclick="if(event.target===this)closeModal('logcall-modal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="logcall-title">Log Call</h3>
+      <button class="modal-close" onclick="closeModal('logcall-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Date / Time</label><input id="lc-datetime" type="datetime-local"></div>
+      <div class="form-group"><label>Call Summary</label><textarea id="lc-summary" rows="6" placeholder="What was discussed?"></textarea></div>
+      <button class="btn btn-purple" onclick="analyseCall()">✨ Analyse with AI</button>
+      <div id="lc-ai-result"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-coral" onclick="saveCall()">Save Call Log</button>
+      <button class="btn btn-light" onclick="closeModal('logcall-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pre-call brief modal -->
+<div class="modal-backdrop" id="brief-modal" onclick="if(event.target===this)closeModal('brief-modal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="brief-title">Pre-call Brief</h3>
+      <button class="modal-close" onclick="closeModal('brief-modal')">&times;</button>
+    </div>
+    <div class="modal-body" id="brief-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-light" onclick="window.print()">Export PDF</button>
+      <button class="btn btn-light" onclick="closeModal('brief-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- View profile modal -->
+<div class="modal-backdrop" id="profile-modal" onclick="if(event.target===this)closeModal('profile-modal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="profile-title">Client Profile</h3>
+      <button class="modal-close" onclick="closeModal('profile-modal')">&times;</button>
+    </div>
+    <div class="modal-body" id="profile-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-light" onclick="window.print()">Export PDF</button>
+      <button class="btn btn-light" onclick="closeModal('profile-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings / API key modal -->
+<div class="modal-backdrop" id="settings-modal" onclick="if(event.target===this)closeModal('settings-modal')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Settings</h3>
+      <button class="modal-close" onclick="closeModal('settings-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Anthropic API Key</label>
+        <input id="settings-apikey" type="password" placeholder="sk-ant-...">
+        <p style="font-size:12px;color:var(--text-muted);margin-top:6px;">
+          Required for AI call analysis and weekly digest. Stored locally in your browser only.
+        </p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-coral" onclick="saveApiKey()">Save</button>
+      <button class="btn btn-light" onclick="closeModal('settings-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// BRIEFING DATA (loaded from briefing.json)
+// ════════════════════════════════════════════════════════════
+const BRIEFING = {"generated_at": "2026-04-09T09:40:07.439752Z", "market_data": {"GBPUSD=X": {"label": "GBP/USD", "category": "fx", "price": 1.3408, "change": 0.0007, "pct_change": 0.05, "direction": "up"}, "EURUSD=X": {"label": "EUR/USD", "category": "fx", "price": 1.1682, "change": -0.0004, "pct_change": -0.04, "direction": "down"}, "USDJPY=X": {"label": "USD/JPY", "category": "fx", "price": 158.966, "change": 0.25, "pct_change": 0.16, "direction": "up"}, "^GSPC": {"label": "S&P 500", "category": "equity", "price": 6782.8101, "change": 165.96, "pct_change": 2.51, "direction": "up"}, "^FTSE": {"label": "FTSE 100", "category": "equity", "price": 10577.9102, "change": -30.9902, "pct_change": -0.29, "direction": "down"}, "^GDAXI": {"label": "DAX", "category": "equity", "price": 23804.1191, "change": -276.5117, "pct_change": -1.15, "direction": "down"}, "GC=F": {"label": "Gold", "category": "commodity", "price": 4755.1001, "change": 5.6001, "pct_change": 0.12, "direction": "up"}, "BZ=F": {"label": "Brent Crude", "category": "commodity", "price": 97.63, "change": 2.88, "pct_change": 3.04, "direction": "up"}, "BTC-USD": {"label": "Bitcoin", "category": "crypto", "price": 71241.1172, "change": 117.7578, "pct_change": 0.17, "direction": "up"}, "ETH-USD": {"label": "Ethereum", "category": "crypto", "price": 2185.2703, "change": -5.0652, "pct_change": -0.23, "direction": "down"}, "_fetched_at": "2026-04-09T09:39:36.569958Z"}, "articles_fetched": 5, "stories": [{"headline": "Hormuz Stranglehold Drives Brent Crude 3% Higher", "summary": "Despite a fragile US-Iran ceasefire, Iran continues to dictate terms in the Strait of Hormuz, with tanker traffic through the critical waterway running below levels seen during active fighting. Supply disruption fears are pushing Brent crude up 3% to $97.63, threatening to reignite inflation concerns globally. Markets are pricing in sustained risk premium as the ceasefire's durability remains deeply uncertain.", "asset": "Brent Crude", "direction": "up", "image_prompt": "A massive oil tanker drifting idle in the golden-hued Strait of Hormuz at dawn, surrounded by calm but tense waters, distant military vessels visible on the horizon, dramatic lighting reflecting off the sea surface", "gamma_chart_suggestion": "Brent crude 30-day price chart overlaid with key Hormuz tanker traffic volume data to illustrate the supply-disruption correlation"}, {"headline": "Trump's Iran Truce Frays as Hawks Circle and Markets Watch", "summary": "The US-Iran ceasefire deal is showing serious cracks, with hawkish voices in the Trump alliance expressing deep scepticism and Tehran maintaining its grip on the Strait of Hormuz. The geopolitical uncertainty is creating a split in global equity markets, with the S&P 500 rallying 2.5% on hopes of de-escalation while European indices \u2014 more exposed to energy cost shocks \u2014 fall sharply. Gold holds near record highs at $4,755 as a safe-haven hedge against renewed conflict.", "asset": "S&P 500", "direction": "up", "image_prompt": "A tense diplomatic meeting room with American and Middle Eastern flags, suited officials in heated discussion across a long table, sunlight streaming through tall windows casting long shadows", "gamma_chart_suggestion": "Side-by-side performance bar chart of S&P 500 vs DAX vs FTSE 100 over the past five sessions to highlight the US-Europe divergence during the ceasefire uncertainty"}, {"headline": "Iran War Accelerates Dollar Weakness, Gold Surges to $4,755", "summary": "The Iran conflict has intensified debate over the US dollar's reserve currency status, with OPEC members and foreign creditors increasingly incentivised to explore dollar alternatives amid weaponisation of the currency and energy market instability. Gold has surged to $4,755, up 0.12% on the day, reflecting sustained demand for non-sovereign stores of value. The dollar's weakness is most visible against sterling, with GBP/USD holding at 1.3408, while USD/JPY edges higher at 158.97 as the yen loses its traditional safe-haven appeal.", "asset": "Gold", "direction": "up", "image_prompt": "Gleaming gold bars stacked in a vault with a blurred background of currency notes from multiple nations, dramatic overhead lighting casting rich golden reflections across a polished steel floor", "gamma_chart_suggestion": "12-month chart of Gold price plotted against the DXY US Dollar Index to visualise the inverse relationship accelerating through the Iran conflict period"}, {"headline": "European Stocks Slide as Energy Shock Bites Harder Than US", "summary": "The DAX fell 1.15% and the FTSE 100 dropped 0.29% as European markets absorb the double blow of elevated energy costs from Hormuz disruptions and fading confidence in the US-Iran truce holding. European firms face a sharper margin squeeze than their US counterparts given higher energy dependency and proximity to the conflict's economic fallout. The divergence with Wall Street's 2.5% rally underscores how geopolitical risk is being priced very differently across the Atlantic.", "asset": "DAX", "direction": "down", "image_prompt": "A wide-angle shot of the Frankfurt financial district skyline at dusk, with dark storm clouds gathering overhead, lights flickering on in glass skyscrapers, a sense of unease and volatility in the atmosphere", "gamma_chart_suggestion": "Scatter plot of European vs US equity index returns over the past month, annotated with key ceasefire and Hormuz disruption events to map sentiment divergence"}, {"headline": "Hormuz Ceasefire Fragility Keeps Beirut, Brussels on High Alert", "summary": "The UK and EU's top diplomat have joined calls for Israel to halt attacks on Lebanon, warning that the broader regional ceasefire is at risk of unravelling unless all fronts are brought into the truce framework. Failure to contain the conflict geographically could reignite energy and risk-asset volatility across European markets already under pressure. Diplomatic efforts are intensifying ahead of what analysts describe as a narrow window to stabilise the ceasefire before hawkish factions on all sides reassert control.", "asset": "Brent Crude", "direction": "up", "image_prompt": "European and British diplomats in formal attire walking urgently through the corridors of a grand international institution, flags of multiple nations lining the walls, a mood of crisis and purpose", "gamma_chart_suggestion": "Timeline chart mapping Brent crude price spikes against key diplomatic events and ceasefire announcements since the Iran conflict escalation began"}]};
+
+// Asset → TradingView symbol mapping
+const TV_SYMBOLS = {
+  "Brent Crude": "NYMEX:BB1!",
+  "Gold":        "COMEX:GC1!",
+  "FTSE 100":    "FOREXCOM:UKXGBP",
+  "EUR/USD":     "FX:EURUSD",
+  "Bitcoin":     "BITSTAMP:BTCUSD",
+  "S&P 500":     "FOREXCOM:SPXUSD",
+  "GBP/USD":     "FX:GBPUSD",
+  "USD/JPY":     "FX:USDJPY",
+  "DAX":         "FOREXCOM:GRXEUR",
+  "Ethereum":    "BITSTAMP:ETHUSD"
+};
+
+// Find market data for an asset by label
+function findMarket(assetName) {
+  for (const k in BRIEFING.market_data) {
+    if (BRIEFING.market_data[k].label === assetName) return BRIEFING.market_data[k];
+  }
+  return null;
+}
+
+// ════════════════════════════════════════════════════════════
+// LOCAL STORAGE
+// ════════════════════════════════════════════════════════════
+const LS = {
+  get(k, def) { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
+  set(k, v)   { localStorage.setItem(k, JSON.stringify(v)); }
+};
+
+let clients      = LS.get('clients', []);
+let calls        = LS.get('calls', []);
+let history      = LS.get('history', []);
+let bookmarks    = LS.get('bookmarks', []);
+let editingClientId = null;
+let logCallClientId = null;
+let pendingPersonalizedStoryIdx = null;
+
+// ════════════════════════════════════════════════════════════
+// PAGE NAVIGATION
+// ════════════════════════════════════════════════════════════
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (name === 'clients')  renderClients();
+  if (name === 'history')  renderHistory();
+}
+
+// ════════════════════════════════════════════════════════════
+// THEME
+// ════════════════════════════════════════════════════════════
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', cur);
+  LS.set('theme', cur);
+}
+const savedTheme = LS.get('theme', 'light');
+document.documentElement.setAttribute('data-theme', savedTheme);
+
+// ════════════════════════════════════════════════════════════
+// STORY CARDS
+// ════════════════════════════════════════════════════════════
+function renderStories() {
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('today-date').textContent = today;
+  document.getElementById('briefing-sub').textContent =
+    BRIEFING.generated_at.slice(0,10) + ' · ' + BRIEFING.stories.length + ' stories curated for you';
+
+  const wrap = document.getElementById('stories-scroll');
+  wrap.innerHTML = '';
+  BRIEFING.stories.forEach((story, idx) => {
+    const market = findMarket(story.asset);
+    const dir = story.direction;
+    const symbol = TV_SYMBOLS[story.asset] || 'FX:EURUSD';
+    const isBookmarked = bookmarks.includes(idx);
+    const arrow = dir === 'up' ? '▲' : dir === 'down' ? '▼' : '●';
+
+    const priceText = market
+      ? (market.price >= 1000 ? market.price.toLocaleString('en-US', {maximumFractionDigits: 2}) : market.price.toFixed(market.price >= 100 ? 2 : 4))
+      : '';
+    const pctText = market ? ((market.pct_change >= 0 ? '+' : '') + market.pct_change.toFixed(2) + '%') : '';
+
+    const chartCfg = encodeURIComponent(JSON.stringify({
+      symbol: symbol,
+      width: "100%",
+      height: 140,
+      dateRange: "1M",
+      colorTheme: "light",
+      trendLineColor: "#FF385C",
+      underLineColor: "rgba(255,56,92,0.1)",
+      isTransparent: true,
+      autosize: true
+    }));
+
+    const googleNewsUrl = 'https://news.google.com/search?q=' + encodeURIComponent(story.headline);
+    const summaryId = 'summary-' + idx;
+
+    const card = document.createElement('div');
+    card.className = 'story-card';
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="asset-badge ${dir}">${arrow} ${story.asset}</span>
+        <button class="bookmark-btn ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark(${idx}, this)" title="Bookmark">
+          ${isBookmarked ? '★' : '☆'}
+        </button>
+      </div>
+      <div class="card-headline">${escapeHtml(story.headline)}</div>
+      <div class="card-summary" id="${summaryId}">${escapeHtml(story.summary)}</div>
+      <button class="read-more-btn" onclick="toggleReadMore('${summaryId}', this)">Read more</button>
+      <div class="mini-chart">
+        <iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?locale=en#${chartCfg}"
+                style="border:none;width:100%;height:140px"
+                loading="lazy"></iframe>
+      </div>
+      <div class="card-meta-row">
+        <span class="price-info ${dir}">${arrow} ${escapeHtml(story.asset)}</span>
+        <span><strong>${priceText}</strong> ${pctText}</span>
+      </div>
+      <div class="card-meta-row" style="margin-top:4px;">
+        <a class="card-source-link" href="${googleNewsUrl}" target="_blank" rel="noopener">View source →</a>
+      </div>
+      <div class="card-buttons">
+        <button class="btn btn-coral"  onclick="openGammaModal(${idx},'general')">General</button>
+        <button class="btn btn-purple" onclick="openClientPicker(${idx})">Personalized</button>
+        <button class="btn btn-dark"   onclick="openGammaModal(${idx},'internal')">Internal</button>
+      </div>`;
+    wrap.appendChild(card);
+  });
+}
+
+function toggleReadMore(summaryId, btn) {
+  const el = document.getElementById(summaryId);
+  const expanded = el.classList.toggle('expanded');
+  btn.textContent = expanded ? 'Read less' : 'Read more';
+}
+
+function toggleBookmark(idx, btn) {
+  if (bookmarks.includes(idx)) {
+    bookmarks = bookmarks.filter(i => i !== idx);
+    btn.classList.remove('active');
+    btn.textContent = '☆';
+  } else {
+    bookmarks.push(idx);
+    btn.classList.add('active');
+    btn.textContent = '★';
+  }
+  LS.set('bookmarks', bookmarks);
+}
+
+// ════════════════════════════════════════════════════════════
+// GAMMA PROMPT MODAL
+// ════════════════════════════════════════════════════════════
+let _currentPrompt = '';
+
+function buildGammaPrompt(story, mode, client) {
+  const market = findMarket(story.asset);
+  const sentiment = story.direction === 'up' ? 'bullish' : story.direction === 'down' ? 'bearish' : 'neutral';
+  let audience, tone, slides;
+
+  if (mode === 'general') {
+    audience = 'general retail trading audience';
+    tone     = 'Clear, balanced, and educational. Use accessible language but include specific data.';
+    slides   = '5';
+  } else if (mode === 'internal') {
+    audience = 'internal investment analysts and portfolio managers';
+    tone     = 'Analytical and data-driven. Include technical context, market mechanics, and risk factors.';
+    slides   = '6';
+  } else if (mode === 'personalized' && client) {
+    audience = `${client.name} — ${client.experience} ${client.risk} investor with a ${client.portfolio} portfolio focused on ${(client.assets || []).join(', ') || 'mixed assets'}`;
+    tone     = `Highly personalized and persuasive. Match their ${client.risk.toLowerCase()} risk profile. Speak directly to ${client.name}'s investment goals: ${client.goals || 'wealth growth'}.`;
+    slides   = '5';
+  }
+
+  const lines = [
+    'Title: ' + story.headline,
+    '',
+    'Audience: ' + audience,
+    'Tone: ' + tone,
+    '',
+    'Summary:',
+    story.summary,
+    '',
+    'Asset in focus: ' + story.asset + ' (' + sentiment + ')',
+  ];
+  if (market) {
+    lines.push(`Current price: ${market.price} (${market.pct_change >= 0 ? '+' : ''}${market.pct_change}%)`);
+  }
+  if (mode === 'internal' && story.gamma_chart_suggestion) {
+    lines.push('', 'Suggested chart: ' + story.gamma_chart_suggestion);
+  }
+  if (story.image_prompt) {
+    lines.push('', 'Suggested visual: ' + story.image_prompt);
+  }
+  if (mode === 'personalized' && client) {
+    lines.push('', `Client notes: ${client.notes || 'none'}`);
+  }
+  lines.push('', `Generate a ${slides}-slide presentation now.`);
+  return lines.join('\n');
+}
+
+function openGammaModal(storyIdx, mode, clientId) {
+  const story  = BRIEFING.stories[storyIdx];
+  const client = clientId ? clients.find(c => c.id === clientId) : null;
+  _currentPrompt = buildGammaPrompt(story, mode, client);
+
+  const label = mode === 'general'      ? 'General Presentation'
+              : mode === 'internal'     ? 'Internal Presentation'
+              : 'Personalized for ' + (client ? client.name : '');
+
+  document.getElementById('gamma-title').textContent = label + ' — Gamma Prompt';
+  document.getElementById('gamma-prompt').textContent = _currentPrompt;
+  document.getElementById('gamma-open-link').href =
+    'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt);
+
+  // Log to history
+  history.unshift({
+    date:    new Date().toISOString(),
+    story:   story.headline,
+    client:  client ? client.name : '—',
+    type:    mode.charAt(0).toUpperCase() + mode.slice(1),
+    promptUrl: 'https://gamma.app/create?prompt=' + encodeURIComponent(_currentPrompt)
+  });
+  LS.set('history', history);
+
+  openModal('gamma-modal');
+}
+
+function copyGammaPrompt() {
+  navigator.clipboard.writeText(_currentPrompt).then(() => {
+    const b = document.getElementById('gamma-copy-btn');
+    b.textContent = 'Copied!';
+    setTimeout(() => b.textContent = 'Copy', 2000);
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// CLIENT PICKER (for personalized)
+// ════════════════════════════════════════════════════════════
+function openClientPicker(storyIdx) {
+  pendingPersonalizedStoryIdx = storyIdx;
+  const list = document.getElementById('picker-list');
+  if (clients.length === 0) {
+    list.innerHTML = '<div class="empty-state"><h3>No clients yet</h3><p>Add a client first to generate a personalized presentation.</p></div>';
+  } else {
+    list.innerHTML = clients.map(c => `
+      <div class="client-card" style="margin-bottom:12px;cursor:pointer" onclick="pickClient('${c.id}')">
+        <div class="client-head">
+          <div class="avatar">${initials(c.name)}</div>
+          <div>
+            <div class="client-name">${escapeHtml(c.name)}</div>
+            <div class="client-id">${escapeHtml(c.pid || '')}</div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  openModal('picker-modal');
+}
+
+function pickClient(clientId) {
+  closeModal('picker-modal');
+  openGammaModal(pendingPersonalizedStoryIdx, 'personalized', clientId);
+}
+
+// ════════════════════════════════════════════════════════════
+// CRM — CLIENTS
+// ════════════════════════════════════════════════════════════
+function renderClients() {
+  const grid    = document.getElementById('client-grid');
+  const search  = (document.getElementById('client-search').value || '').toLowerCase();
+  const filtered = clients.filter(c =>
+    !search || c.name.toLowerCase().includes(search) || (c.pid || '').toLowerCase().includes(search)
+  );
+  document.getElementById('clients-sub').textContent =
+    `${filtered.length} of ${clients.length} clients`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <h3>No clients yet</h3>
+        <p>Click "Add Client" to start building your CRM.</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(c => {
+    const today    = new Date().toISOString().slice(0,10);
+    const overdue  = c.followup && c.followup < today;
+    const riskPill = c.risk === 'Conservative' ? 'pill-green' : c.risk === 'Moderate' ? 'pill-amber' : 'pill-red';
+    const sentLabel = c.sentiment === 'hot' ? '🔥 Hot' : c.sentiment === 'cold' ? '❄️ Cold' : '☀️ Warm';
+    const lastCall = (calls.filter(cl => cl.clientId === c.id).sort((a,b) => b.datetime.localeCompare(a.datetime))[0] || {}).datetime;
+
+    return `
+      <div class="client-card">
+        <div class="client-head">
+          <div class="avatar">${initials(c.name)}</div>
+          <div style="flex:1">
+            <div class="client-name">${escapeHtml(c.name)}</div>
+            <div class="client-id">ID: ${escapeHtml(c.pid || '—')}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <span class="pill ${riskPill}">${escapeHtml(c.risk)}</span>
+          <span class="pill pill-coral">${sentLabel}</span>
+        </div>
+        <div class="client-info">
+          <div class="row"><span>Portfolio</span><strong>${escapeHtml(c.portfolio || '—')}</strong></div>
+          <div class="row"><span>Last contact</span><strong>${lastCall ? lastCall.slice(0,10) : 'Never'}</strong></div>
+          <div class="row">
+            <span>Follow-up</span>
+            <strong class="${overdue ? 'overdue' : ''}">${c.followup || '—'}${overdue ? ' ⚠' : ''}</strong>
+          </div>
+        </div>
+        <div class="client-buttons">
+          <button class="btn btn-coral"   onclick="openPreCallBrief('${c.id}')">Pre-call Brief</button>
+          <button class="btn btn-purple"  onclick="openLogCall('${c.id}')">Log Call</button>
+          <button class="btn btn-light"   onclick="openProfile('${c.id}')">Profile</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openClientForm(id) {
+  editingClientId = id || null;
+  document.getElementById('client-form-title').textContent = id ? 'Edit Client' : 'Add Client';
+  const c = id ? clients.find(x => x.id === id) : null;
+  document.getElementById('cf-name').value        = c?.name || '';
+  document.getElementById('cf-pid').value         = c?.pid || '';
+  document.getElementById('cf-risk').value        = c?.risk || 'Moderate';
+  document.getElementById('cf-portfolio').value   = c?.portfolio || '';
+  document.getElementById('cf-nationality').value = c?.nationality || '';
+  document.getElementById('cf-experience').value  = c?.experience || 'Intermediate';
+  document.getElementById('cf-goals').value       = c?.goals || '';
+  document.getElementById('cf-notes').value       = c?.notes || '';
+  document.getElementById('cf-sentiment').value   = c?.sentiment || 'warm';
+  document.getElementById('cf-followup').value    = c?.followup || '';
+  document.querySelectorAll('.cf-asset').forEach(cb => {
+    cb.checked = (c?.assets || []).includes(cb.value);
+  });
+  openModal('client-form-modal');
+}
+
+function saveClient() {
+  const name = document.getElementById('cf-name').value.trim();
+  if (!name) return toast('Name is required');
+  const data = {
+    id:          editingClientId || ('c_' + Date.now()),
+    name,
+    pid:         document.getElementById('cf-pid').value,
+    risk:        document.getElementById('cf-risk').value,
+    portfolio:   document.getElementById('cf-portfolio').value,
+    nationality: document.getElementById('cf-nationality').value,
+    experience:  document.getElementById('cf-experience').value,
+    goals:       document.getElementById('cf-goals').value,
+    notes:       document.getElementById('cf-notes').value,
+    sentiment:   document.getElementById('cf-sentiment').value,
+    followup:    document.getElementById('cf-followup').value,
+    assets:      Array.from(document.querySelectorAll('.cf-asset:checked')).map(cb => cb.value)
+  };
+  if (editingClientId) {
+    clients = clients.map(x => x.id === editingClientId ? data : x);
+  } else {
+    clients.push(data);
+  }
+  LS.set('clients', clients);
+  closeModal('client-form-modal');
+  renderClients();
+  toast('Client saved');
+}
+
+// ════════════════════════════════════════════════════════════
+// CALL LOGS
+// ════════════════════════════════════════════════════════════
+function openLogCall(clientId) {
+  logCallClientId = clientId;
+  const c = clients.find(x => x.id === clientId);
+  document.getElementById('logcall-title').textContent = 'Log Call — ' + c.name;
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('lc-datetime').value = now.toISOString().slice(0,16);
+  document.getElementById('lc-summary').value = '';
+  document.getElementById('lc-ai-result').innerHTML = '';
+  openModal('logcall-modal');
+}
+
+async function analyseCall() {
+  const client  = clients.find(x => x.id === logCallClientId);
+  const summary = document.getElementById('lc-summary').value.trim();
+  if (!summary) return toast('Add a call summary first');
+  const key = localStorage.getItem('anthropic_key');
+  if (!key) {
+    toast('Add your Anthropic API key in Settings');
+    openSettings();
+    return;
+  }
+
+  const resultEl = document.getElementById('lc-ai-result');
+  resultEl.innerHTML = '<div class="ai-result"><span class="spinner"></span> Analysing with Claude...</div>';
+
+  const prompt = `You are an expert wealth-management coach. Analyse this client call and respond with the following sections (use plain text headers):
+
+1. ASSET SUGGESTIONS (matched to KYC)
+2. APPROACH STRATEGY
+3. OBJECTION HANDLING
+4. UPSELL OPPORTUNITIES
+5. SENTIMENT SCORE (Hot / Warm / Cold + 1-line reason)
+
+CLIENT KYC:
+- Name: ${client.name}
+- Risk profile: ${client.risk}
+- Experience: ${client.experience}
+- Portfolio size: ${client.portfolio}
+- Preferred assets: ${(client.assets || []).join(', ')}
+- Investment goals: ${client.goals}
+- Notes: ${client.notes}
+
+CALL SUMMARY:
+${summary}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content[0].text;
+    resultEl.innerHTML = '<div class="ai-result">' + escapeHtml(text) + '</div>';
+    window._lastAnalysis = text;
+  } catch (err) {
+    resultEl.innerHTML = '<div class="ai-result" style="color:var(--red)">Error: ' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+function saveCall() {
+  const summary = document.getElementById('lc-summary').value.trim();
+  if (!summary) return toast('Call summary is required');
+  calls.push({
+    id:        'call_' + Date.now(),
+    clientId:  logCallClientId,
+    datetime:  document.getElementById('lc-datetime').value,
+    summary,
+    analysis:  window._lastAnalysis || ''
+  });
+  LS.set('calls', calls);
+  window._lastAnalysis = null;
+  closeModal('logcall-modal');
+  renderClients();
+  toast('Call logged');
+}
+
+// ════════════════════════════════════════════════════════════
+// PRE-CALL BRIEF
+// ════════════════════════════════════════════════════════════
+function openPreCallBrief(clientId) {
+  const c = clients.find(x => x.id === clientId);
+  const clientCalls = calls.filter(cl => cl.clientId === clientId).sort((a,b) => b.datetime.localeCompare(a.datetime));
+  const topStories = BRIEFING.stories.slice(0, 3);
+
+  document.getElementById('brief-title').textContent = 'Pre-call Brief — ' + c.name;
+  document.getElementById('brief-body').innerHTML = `
+    <h4 style="font-size:13px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.5px;margin-bottom:10px">Client KYC</h4>
+    <div class="ai-result">
+<strong>Name:</strong> ${escapeHtml(c.name)}
+<strong>Risk:</strong> ${escapeHtml(c.risk)} · <strong>Experience:</strong> ${escapeHtml(c.experience)}
+<strong>Portfolio:</strong> ${escapeHtml(c.portfolio || '—')}
+<strong>Preferred assets:</strong> ${(c.assets || []).join(', ') || '—'}
+<strong>Goals:</strong> ${escapeHtml(c.goals || '—')}
+<strong>Notes:</strong> ${escapeHtml(c.notes || '—')}
+    </div>
+
+    <h4 style="font-size:13px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.5px;margin:24px 0 10px">Recommended talking points (today)</h4>
+    ${topStories.map(s => `
+      <div style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">
+        <strong>${escapeHtml(s.headline)}</strong>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:6px">${escapeHtml(s.summary.slice(0,180))}...</p>
+      </div>`).join('')}
+
+    <h4 style="font-size:13px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.5px;margin:24px 0 10px">Past calls (${clientCalls.length})</h4>
+    ${clientCalls.length === 0
+      ? '<p style="color:var(--text-muted);font-size:13px">No call history yet.</p>'
+      : clientCalls.map(cl => `
+        <div style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${cl.datetime.replace('T', ' ')}</div>
+          <div style="font-size:13px;line-height:1.6">${escapeHtml(cl.summary)}</div>
+          ${cl.analysis ? `<div class="ai-result" style="margin-top:10px;font-size:12px">${escapeHtml(cl.analysis)}</div>` : ''}
+        </div>`).join('')
+    }
+  `;
+  openModal('brief-modal');
+}
+
+// ════════════════════════════════════════════════════════════
+// VIEW PROFILE
+// ════════════════════════════════════════════════════════════
+function openProfile(clientId) {
+  const c = clients.find(x => x.id === clientId);
+  const clientCalls = calls.filter(cl => cl.clientId === clientId).sort((a,b) => b.datetime.localeCompare(a.datetime));
+
+  document.getElementById('profile-title').textContent = c.name + ' — Profile';
+  document.getElementById('profile-body').innerHTML = `
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:20px">
+      <div class="avatar" style="width:64px;height:64px;font-size:22px">${initials(c.name)}</div>
+      <div>
+        <div style="font-size:20px;font-weight:800">${escapeHtml(c.name)}</div>
+        <div style="color:var(--text-muted);font-size:13px">${escapeHtml(c.pid || '—')} · ${escapeHtml(c.nationality || '')}</div>
+      </div>
+      <button class="btn btn-light btn-sm" style="margin-left:auto" onclick="openClientForm('${c.id}')">Edit</button>
+    </div>
+    <div class="ai-result">
+<strong>Risk profile:</strong> ${escapeHtml(c.risk)}
+<strong>Experience:</strong> ${escapeHtml(c.experience)}
+<strong>Portfolio size:</strong> ${escapeHtml(c.portfolio || '—')}
+<strong>Preferred assets:</strong> ${(c.assets || []).join(', ') || '—'}
+<strong>Investment goals:</strong> ${escapeHtml(c.goals || '—')}
+<strong>Notes:</strong> ${escapeHtml(c.notes || '—')}
+<strong>Sentiment:</strong> ${escapeHtml(c.sentiment || '—')}
+<strong>Follow-up:</strong> ${escapeHtml(c.followup || '—')}
+    </div>
+    <h4 style="font-size:13px;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.5px;margin:24px 0 10px">
+      Call history (${clientCalls.length})
+    </h4>
+    ${clientCalls.length === 0
+      ? '<p style="color:var(--text-muted);font-size:13px">No call history yet.</p>'
+      : clientCalls.map(cl => `
+        <div style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${cl.datetime.replace('T',' ')}</div>
+          <div style="font-size:13px;line-height:1.6">${escapeHtml(cl.summary)}</div>
+          ${cl.analysis ? `<div class="ai-result" style="margin-top:10px;font-size:12px">${escapeHtml(cl.analysis)}</div>` : ''}
+        </div>`).join('')
+    }`;
+  openModal('profile-modal');
+}
+
+// ════════════════════════════════════════════════════════════
+// HISTORY
+// ════════════════════════════════════════════════════════════
+function renderHistory() {
+  const wrap = document.getElementById('history-table');
+  document.getElementById('history-sub').textContent = `${history.length} presentations`;
+  if (history.length === 0) {
+    wrap.innerHTML = '<div class="empty-state"><h3>No history yet</h3><p>Click any presentation button on a story card to log it here.</p></div>';
+    return;
+  }
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Story</th><th>Client</th><th>Type</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        ${history.map(h => `
+          <tr>
+            <td>${h.date.slice(0,10)} ${h.date.slice(11,16)}</td>
+            <td>${escapeHtml(h.story.slice(0,60))}${h.story.length > 60 ? '…' : ''}</td>
+            <td>${escapeHtml(h.client)}</td>
+            <td><span class="pill pill-coral">${escapeHtml(h.type)}</span></td>
+            <td><a class="btn btn-sm btn-light" href="${h.promptUrl}" target="_blank" rel="noopener">Open in Gamma</a></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function clearHistory() {
+  if (!confirm('Clear all presentation history?')) return;
+  history = [];
+  LS.set('history', history);
+  renderHistory();
+}
+
+// ════════════════════════════════════════════════════════════
+// WEEKLY DIGEST
+// ════════════════════════════════════════════════════════════
+async function generateDigest() {
+  const key = localStorage.getItem('anthropic_key');
+  if (!key) { toast('Add your Anthropic API key in Settings'); openSettings(); return; }
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const recentCalls  = calls.filter(c => c.datetime >= sevenDaysAgo.slice(0,16));
+
+  const btn = document.getElementById('digest-btn');
+  btn.innerHTML = '<span class="spinner"></span> Generating...';
+  btn.disabled  = true;
+
+  const callsText = recentCalls.length === 0
+    ? 'No calls logged in the past 7 days.'
+    : recentCalls.map(c => {
+        const cl = clients.find(x => x.id === c.clientId) || {};
+        return `[${c.datetime}] ${cl.name || 'Unknown'} (${cl.risk || '—'}, ${cl.portfolio || '—'}):\n${c.summary}\n${c.analysis ? '\nAnalysis: ' + c.analysis : ''}`;
+      }).join('\n\n---\n\n');
+
+  const prompt = `You are a wealth-management team coach. Review the following client calls from the past 7 days and produce a concise weekly digest with these sections:
+
+1. TOP CLIENT OPPORTUNITIES (ranked)
+2. WEEKLY SENTIMENT OVERVIEW
+3. RECOMMENDED FOLLOW-UPS
+
+CALLS:
+${callsText}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const result = document.getElementById('digest-result');
+    result.style.display = 'block';
+    result.textContent = data.content[0].text;
+  } catch (err) {
+    toast('Error: ' + err.message);
+  } finally {
+    btn.innerHTML = '✨ Generate Weekly Digest';
+    btn.disabled  = false;
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════════════════════
+function openSettings() {
+  document.getElementById('settings-apikey').value = localStorage.getItem('anthropic_key') || '';
+  openModal('settings-modal');
+}
+
+function saveApiKey() {
+  const k = document.getElementById('settings-apikey').value.trim();
+  if (k) localStorage.setItem('anthropic_key', k);
+  closeModal('settings-modal');
+  toast('API key saved');
+}
+
+// ════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function escapeHtml(s)  {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function initials(name) {
+  return name.split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
+}
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ════════════════════════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+  }
+  if (e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+    e.preventDefault();
+    showPage('clients', document.querySelector('.nav-link:nth-child(2)'));
+    setTimeout(() => document.getElementById('client-search').focus(), 50);
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+renderStories();
+
+// First-load API key prompt
+if (!localStorage.getItem('anthropic_key') && !LS.get('seen_welcome', false)) {
+  setTimeout(() => {
+    LS.set('seen_welcome', true);
+    openSettings();
+  }, 600);
+}
+</script>
+</body>
+</html>
